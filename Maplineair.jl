@@ -1,20 +1,21 @@
 module Maplineair
 include("fonction.jl")
 
-function omega(X::AbstractMatrix{T}, P::AbstractMatrix{T}, H::AbstractMatrix{T}) where T #calcul de l'operateur matricielle omega
+function omega(X::AbstractMatrix{T}, P::AbstractMatrix{T}, H::AbstractMatrix{T}) where T #Operateur matricielle omega
     X = projection(P, X)
     om = P * X * (I - P) * H - H * P * X * (I - P)
     omega = om + om'
     return projection(P, omega)
 end
 #############################################################################################
-function K(P::AbstractMatrix{T}, X::AbstractMatrix{T},alpha,dx) where T #Calcul e la matrice hessienn
+function K(P::AbstractMatrix{T}, X::AbstractMatrix{T},alpha,dx) where T #Opérateur de la matrice hessienn
     X=projection(P,X)
     k=(alpha/dx)*diagm(diag(X))
     k=projection(P,k)
     return k
 end
-function omega_maps(P_star,H)    
+#############################################################################################
+function omega_maps(P_star,H)    #lineaire map omega
     n = size(P_star, 1)
     omega_func = x -> begin
         X = reshape(x, n, n)
@@ -28,8 +29,7 @@ function omega_maps(P_star,H)
     return omeg
 end
 ##############################################################################################
-
-function J_map(P_star,H)    #fonction qui calcul la jacobienne du gradient descent et SCF
+function J_map(P_star,H)    #fonction qui calcul la lineair map de la jacobienne du gradient descent et SCF
     n = size(P_star, 1)
     J_gradient = x -> begin
         X = reshape(x, n, n)
@@ -52,9 +52,7 @@ function J_map(P_star,H)    #fonction qui calcul la jacobienne du gradient desce
     J_map_SCF = LinearMap(J_SCF, n^2)
     return J_map_SCF,J_gradient_map
 end
-
 ##############################################################################################
-
 function beta_optim(A,n)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
     lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
     lambda_max=norm(lambda_max_list)
@@ -69,7 +67,6 @@ function beta_optim(A,n)   # beta optimal sans faire la projection sur la base (
     beta_optimal=2/(lambda_max+lambda_min)
 end
 ##############################################################################################
-
 function beta_op(A,n)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
     lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
     lambda_max=norm(lambda_max_list)
@@ -77,9 +74,8 @@ function beta_op(A,n)   # beta optimal sans faire la projection sur la base (bou
     lambda_min=norm(lambda_max_list)
     beta_optimal=2/(lambda_max+lambda_min)
 end
-
 ##############################################################################################
-function J_base_réduite(P_star,H)
+function J_base_réduite(P_star,H) #la lineairmap de la jacobien de SCF réduite dans la base de la tangente
     base=base_propre(H)
     J_map_SCF=J_map(P_star,H)[1]
     ph=vecteur_propre(H)
@@ -96,7 +92,7 @@ function J_base_réduite(P_star,H)
     return J_base
 end
 ###############################################################################################
-function J_base_réduite_gradient(P_star,H)
+function J_base_réduite_gradient(P_star,H)  #la lineairmap de la jacobien de gradient réduite dans la base de la tangente
     base=base_propre(H)
     J_map_SCF=J_map(P_star,H)[2]
     ph=vecteur_propre(H)
