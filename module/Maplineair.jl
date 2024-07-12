@@ -67,7 +67,7 @@ function beta_optim(A,n)   # beta optimal sans faire la projection sur la base (
     beta_optimal=2/(lambda_max+lambda_min)
 end
 ##############################################################################################
-function beta_op(A,n)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
+function beta_op(A)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
     lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
     lambda_max=norm(lambda_max_list)
     lambda_min_list = eigs(A, nev=1, which=:SR, tol=1e-10,maxiter=10000)[1]
