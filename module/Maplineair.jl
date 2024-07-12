@@ -52,28 +52,7 @@ function J_map(P_star,H)    #fonction qui calcul la lineair map de la jacobienne
     J_map_SCF = LinearMap(J_SCF, n^2)
     return J_map_SCF,J_gradient_map
 end
-##############################################################################################
-function beta_optim(A,n)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
-    lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
-    lambda_max=norm(lambda_max_list)
-    lambda_min_list = eigs(A, nev=n, which=:SR, tol=1e-10,maxiter=10000)[1]
-    lambda_min=0
-    for i in 1:length(lambda_min_list)
-        if norm(lambda_min_list[i])>1+1e-3
-            lambda_min=norm(lambda_min_list[i])
-            break
-        end
-    end
-    beta_optimal=2/(lambda_max+lambda_min)
-end
-##############################################################################################
-function beta_op(A)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
-    lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
-    lambda_max=norm(lambda_max_list)
-    lambda_min_list = eigs(A, nev=1, which=:SR, tol=1e-10,maxiter=10000)[1]
-    lambda_min=norm(lambda_max_list)
-    beta_optimal=2/(lambda_max+lambda_min)
-end
+
 ##############################################################################################
 function J_base_réduite(P_star,H) #la lineairmap de la jacobien de SCF réduite dans la base de la tangente
     base=base_propre(H)
@@ -107,6 +86,28 @@ function J_base_réduite_gradient(P_star,H)  #la lineairmap de la jacobien de gr
     end
     J_base=LinearMap(J_base_func,n-1)
     return J_base
+end
+##############################################################################################
+function beta_optim(A,n)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
+    lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
+    lambda_max=norm(lambda_max_list)
+    lambda_min_list = eigs(A, nev=n, which=:SR, tol=1e-10,maxiter=10000)[1]
+    lambda_min=0
+    for i in 1:length(lambda_min_list)
+        if norm(lambda_min_list[i])>1+1e-3
+            lambda_min=norm(lambda_min_list[i])
+            break
+        end
+    end
+    beta_optimal=2/(lambda_max+lambda_min)
+end
+##############################################################################################
+function beta_op(A)   # beta optimal sans faire la projection sur la base (boucle sur la premiere valeur propre non nul)
+    lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
+    lambda_max=norm(lambda_max_list)
+    lambda_min_list = eigs(A, nev=1, which=:SR, tol=1e-10,maxiter=10000)[1]
+    lambda_min=norm(lambda_max_list)
+    beta_optimal=2/(lambda_max+lambda_min)
 end
 
 end #module
