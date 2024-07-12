@@ -1,5 +1,5 @@
 module Point_fixe
-include("fonction.jl") 
+include("function.jl") 
 
 function SCF(Nb, alpha, beta, max_iter, tolerance)  # point fixe avec beta fixe
 h=construction(Nb)
