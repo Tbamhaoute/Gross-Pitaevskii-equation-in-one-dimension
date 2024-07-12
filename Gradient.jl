@@ -1,5 +1,5 @@
 module Gradient
-include fonction
+include("fonction.jl") 
 
 function gradient_descent(Nb, alpha, beta, max_iterations, tolerance) #méhode de gradient descent à pas fixe
     dx = 1 / Nb
