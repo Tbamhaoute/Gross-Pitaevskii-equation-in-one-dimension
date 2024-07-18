@@ -1,14 +1,9 @@
 module fonction 
-
+export V, projection, construction, phi, vecteur_propre, base_propre, retraction
 using LinearAlgebra
 using SparseArrays
-using Plots
-using Base.Threads
-using Distributed
-using IterativeSolvers
-using LinearRegression
-using LinearMaps
 using Arpack
+
 
 #potentiel
 V(x) = -20 * (exp(-30 * cos(pi * (x - 0.20))^2) + 2 * exp(-30 * cos(pi * (x + 0.25))^2))
@@ -25,7 +20,8 @@ function projection(P::AbstractMatrix{T}, X::AbstractMatrix{T}) where T #project
 end
 
 function construction(Nb) #construction du hamiltonien
-   x = LinRange(0, 1, Nb)
+    x = LinRange(0, 1, Nb)
+    dx = 1 / Nb
     diag_V = V.(x)
     main_diag = (1 / dx^2) .+ diag_V
     off_diag = fill(-1 / (2 * dx^2), Nb - 1)
@@ -56,14 +52,26 @@ function vecteur_propre(A) #Matrice des vecteurs propres triés
     end
     sorted_eigvecs
 end
-
-function base_propre(A)  #Matrice de la base des vecteurs propres de l'éspace tangent
-    sorted_eigvecs = vecteur_propre(A)
-    for i in 2:n
-        phi[:, i-1] = reshape(sorted_eigvecs[:, i] * (sorted_eigvecs[:, 1])' + sorted_eigvecs[:, 1] * (sorted_eigvecs[:, i])', n^2)
+function base_propre(A) #Matrice de la base des vecteurs propres de l'éspace tangent
+        eigvals, eigvecs = eigen(A)
+        sorted_indices = sortperm(eigvals)
+        sorted_eigvals = eigvals[sorted_indices]
+        sorted_eigvecs = eigvecs[:, sorted_indices]
+        n = size(A, 1)
+    
+        phi = zeros(n^2, n-1)  
+        
+        for i in 1:n
+            sorted_eigvecs[:, i] /= norm(sorted_eigvecs[:, i])
+        end
+    
+        for i in 2:n
+            phi[:, i-1] = reshape(sorted_eigvecs[:, i] * (sorted_eigvecs[:, 1])' + sorted_eigvecs[:, 1] * (sorted_eigvecs[:, i])', n^2)
+        end
+        
+        return phi
     end
-    return phi
-end
+    
 
 function retraction(P) #fonction de la retraction
     eigvals, eigvecs = eigen(P)

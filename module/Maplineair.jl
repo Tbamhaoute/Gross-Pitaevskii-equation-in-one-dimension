@@ -1,5 +1,13 @@
 module Maplineair
+using LinearAlgebra
+using LinearMaps
+using Arpack
+using IterativeSolvers
+
+
 include("fonction.jl")
+using .fonction
+export J_base_réduite,J_base_réduite_gradient,beta_op,beta_optim,J_map
 
 function omega(X::AbstractMatrix{T}, P::AbstractMatrix{T}, H::AbstractMatrix{T}) where T #Operateur matricielle omega
     X = projection(P, X)
@@ -29,7 +37,7 @@ function omega_maps(P_star,H)    #lineaire map omega
     return omeg
 end
 ##############################################################################################
-function J_map(P_star,H)    #fonction qui calcul la lineair map de la jacobienne du gradient descent et SCF
+function J_map(P_star,H,alpha,dx)    #fonction qui calcul la lineair map de la jacobienne du gradient descent et SCF
     n = size(P_star, 1)
     J_gradient = x -> begin
         X = reshape(x, n, n)
@@ -54,9 +62,10 @@ function J_map(P_star,H)    #fonction qui calcul la lineair map de la jacobienne
 end
 
 ##############################################################################################
-function J_base_réduite(P_star,H) #la lineairmap de la jacobien de SCF réduite dans la base de la tangente
+function J_base_réduite(P_star,H,alpha,dx) #la lineairmap de la jacobien de SCF réduite dans la base de la tangente
+    n = size(P_star, 1)
     base=base_propre(H)
-    J_map_SCF=J_map(P_star,H)[1]
+    J_map_SCF=J_map(P_star,H,alpha,dx)[1]
     ph=vecteur_propre(H)
     J_base_func = x -> begin
         x = reshape(x, n-1)
@@ -71,9 +80,10 @@ function J_base_réduite(P_star,H) #la lineairmap de la jacobien de SCF réduite
     return J_base
 end
 ###############################################################################################
-function J_base_réduite_gradient(P_star,H)  #la lineairmap de la jacobien de gradient réduite dans la base de la tangente
+function J_base_réduite_gradient(P_star,H,alpha,dx)  #la lineairmap de la jacobien de gradient réduite dans la base de la tangente
+    n=size(P_star,1)
     base=base_propre(H)
-    J_map_SCF=J_map(P_star,H)[2]
+    J_map_SCF=J_map(P_star,H,alpha,dx)[2]
     ph=vecteur_propre(H)
     J_base_func = x -> begin
         x = reshape(x, n-1)
@@ -106,8 +116,9 @@ function beta_op(A)   # beta optimal sans faire la projection sur la base (boucl
     lambda_max_list = eigs(A, nev=1, which=:LR, tol=1e-10,maxiter=100000)[1]
     lambda_max=norm(lambda_max_list)
     lambda_min_list = eigs(A, nev=1, which=:SR, tol=1e-10,maxiter=10000)[1]
-    lambda_min=norm(lambda_max_list)
+    lambda_min=norm(lambda_min_list)
     beta_optimal=2/(lambda_max+lambda_min)
+    return lambda_max,lambda_min,beta_optimal
 end
 
 end #module

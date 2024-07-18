@@ -1,5 +1,10 @@
 module Gradient
 include("fonction.jl") 
+using .fonction
+using LinearAlgebra
+using SparseArrays
+using Arpack
+export gradient_descent,gradient_barzilai,gradient_descent_random,gradient_descent_variable
 
 function gradient_descent(Nb, alpha, beta, max_iterations, tolerance) #méhode de gradient descent à pas fixe
     dx = 1 / Nb

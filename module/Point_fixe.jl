@@ -1,8 +1,12 @@
 module Point_fixe
+using LinearAlgebra
 include("fonction.jl") 
+using .fonction
+export SCF,SCF_pas_random,SCF_pas_variable,SCF_pas_variable2
 
 function SCF(Nb, alpha, beta, max_iter, tolerance)  # point fixe avec beta fixe
 h=construction(Nb)
+dx=1/Nb
 P_old=phi(h)
    #= P_perturb=Symmetric(rand(Nb,Nb))     pour ajouter une perturbation à la solution initial
     P_perturb/=10*norm(P_perturb)
@@ -32,6 +36,7 @@ end
 
 function SCF_pas_variable(Nb, alpha, max_iter, tolerance)   #point fixe à pas variable avec méthode de la trace
 h=construction(Nb)
+dx=1/Nb
 P_old=phi(h)
    #= P_perturb=Symmetric(rand(Nb,Nb))
     P_perturb/=10*norm(P_perturb)
@@ -66,6 +71,7 @@ end
 
 function SCF_pas_variable2(Nb, alpha, max_iter, tolerance)  #point fixe à pas variable avec méthode du double diagonalisation
 h=construction(Nb)
+dx=1/Nb
 P_old=phi(h)
    #= P_perturb=Symmetric(rand(Nb,Nb))
     P_perturb/=10*norm(P_perturb)
@@ -100,6 +106,7 @@ end
 
 function SCF_pas_random(Nb, alpha, max_iter, tolerance)  # multiplication du beta variable 1 par une loi uniforme entre [0.5,1.5]
 h=construction(Nb)
+dx=1/Nb
 P_old=phi(h)
    #= P_perturb=Symmetric(rand(Nb,Nb))
     P_perturb/=10*norm(P_perturb)
