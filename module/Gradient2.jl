@@ -7,6 +7,7 @@ using SparseArrays
 using Arpack
 using .Maplineair
 
+export gradient_j,gradient_3
 
 function gradient_j(Nb, alpha_val, max_iterations, tolerance,case) 
     dx = 1 / Nb
