@@ -63,4 +63,4 @@ end
 
 # Ajouter les points de stagnation avec un scatter plot
 p2=plot!(gamma_list, g_liste, seriestype=:scatter, marker=:circle, color=:red, label="Points de stagnation")
-display(p1,p2)
+display([p1,p2])
