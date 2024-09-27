@@ -1,15 +1,18 @@
 module Gradient2
 include("fonction.jl")
-include("Maplineair") 
+include("Maplineair.jl") 
 using .fonction
+using .Maplineair
 using LinearAlgebra
 using SparseArrays
 using Arpack
-using .Maplineair
+using Polynomials
+using Roots
 
-export gradient_j,gradient_3
 
-function gradient_j(Nb, alpha_val, max_iterations, tolerance,case) 
+export gradient_j,gradient_variable
+
+function gradient_j(Nb, alpha_val, max_iterations, tolerance,J_map_grad,case)    
     dx = 1 / Nb
     h = construction(Nb)
     P_old = phi(h)
@@ -17,6 +20,7 @@ function gradient_j(Nb, alpha_val, max_iterations, tolerance,case)
     s = []
     erreur = []
     beta_list=[]
+    
     for k in 1:max_iterations
         H = h + (alpha_val / dx) * diagm(diag(P_old))
         rk=projection(P_old,H)
@@ -25,7 +29,7 @@ function gradient_j(Nb, alpha_val, max_iterations, tolerance,case)
         if case ==1
         β=tr(rk'*J_map_rk)/tr(J_map_rk'*J_map_rk)
         else
-        β=(3/2-rand())*tr(rk'*J_map_rk)/tr(J_map_rk'*J_map_rk)
+        β=2*rand()*tr(rk'*J_map_rk)/tr(J_map_rk'*J_map_rk)
         end
         push!(beta_list,β)
         P_new = P_old - β * rk
@@ -44,9 +48,9 @@ function gradient_j(Nb, alpha_val, max_iterations, tolerance,case)
 return P_old, s, erreur,beta_list
 end
 
-function gradient_3(Nb, alpha_val, max_iterations, tolerance,case)  # gradient avec paramètre de relxation solution d'une équation de 3 ème degré
+function gradient_variable(Nb, alpha_val, max_iterations, tolerance,case) 
     B(r,X,P)=-r*X-X*r+2*P*X*r+2*r*X*P
-    C(r,X)=-2*r*X*r 
+    C(r,X)=-2*r*X*r
     dx = 1 / Nb
     h = construction(Nb)
     P_old = phi(h)
@@ -69,12 +73,18 @@ function gradient_3(Nb, alpha_val, max_iterations, tolerance,case)  # gradient a
         racines_reelles = real(racines_reelles)
         #println(racines_reelles)
         if case==1
-            β = minimum(abs.(racines_reelles)) 
+            beta = minimum(abs.(racines_reelles)) 
         elseif case==2
-            β = 2*rand()*minimum(abs.(racines_reelles))
-        end 
-        push!(beta_list,β)
-        P_new = P_old - β * rk
+            beta = 2*rand()*minimum(abs.(racines_reelles))
+        elseif case ==3
+            beta=5e-5
+        elseif case ==4
+            beta=(tr(h*P_old*rk)+(alpha_val/(2*dx))*sum(P_old[i,i]*rk[i,i] for i in 1:Nb))/(tr(h*rk^2)+(alpha_val/(2*dx))*sum(rk[i,i]^2 for i in 1:Nb))
+        elseif case ==5
+            beta=2*rand()*(tr(h*P_old*rk)+(alpha_val/(2*dx))*sum(P_old[i,i]*rk[i,i] for i in 1:Nb))/(tr(h*rk^2)+(alpha_val/(2*dx))*sum(rk[i,i]^2 for i in 1:Nb))
+        end
+        push!(beta_list,beta)
+        P_new = P_old - beta * rk
         P_new=Symmetric(P_new)
         P_new = retraction(P_new)
         push!(s,k)
@@ -89,7 +99,6 @@ function gradient_3(Nb, alpha_val, max_iterations, tolerance,case)  # gradient a
     end
 return P_old, s, erreur,beta_list
 end
-
 
 
 
